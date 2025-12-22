@@ -1,5 +1,7 @@
 package com.fetters.proxy;
 
+import com.fetters.RpcApplication;
+
 import java.lang.reflect.Proxy;
 
 /**
@@ -15,10 +17,28 @@ public class ServiceProxyFactory {
      * @return 返回指定服务类的代理对象实例
      */
     public static <T> T getProxy(Class<T> serviceClass) {
+        if (RpcApplication.getRpcConfig().isMock()) {
+            return getMockProxy(serviceClass);
+        }
+
         // 使用JDK动态代理创建服务代理对象
         return (T) Proxy.newProxyInstance(
                 serviceClass.getClassLoader(),
                 new Class[]{serviceClass},
                 new ServiceProxy());
+    }
+
+    /**
+     * 获取模拟代理对象
+     *
+     * @param serviceClass 服务接口类，用于创建代理对象
+     * @param <T>          泛型类型，表示服务接口的类型
+     * @return 模拟代理对象实例
+     */
+    private static <T> T getMockProxy(Class<T> serviceClass) {
+        return (T) Proxy.newProxyInstance(
+                serviceClass.getClassLoader(),
+                new Class[]{serviceClass},
+                new MockServiceProxy());
     }
 }
